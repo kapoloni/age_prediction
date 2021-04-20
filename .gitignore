@@ -22,10 +22,16 @@ var/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
+# Myfolders
+outputs/
+runs/
+predict_results/
+
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
