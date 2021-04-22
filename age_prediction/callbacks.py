@@ -35,7 +35,6 @@ def _get_current_time(strft=False):
         return datetime.datetime.now()
 
 
-
 class CallbackContainer(object):
     """
     Container holding a list of callbacks.
@@ -297,7 +296,6 @@ class ModelCheckpoint(Callback):
                  monitor='val_loss',
                  save_best_only=False,
                  save_weights_only=True,
-                 max_save=-1,
                  verbose=0):
         """
         Model Checkpoint to save model weights during training
@@ -315,10 +313,6 @@ class ModelCheckpoint(Callback):
         save_weight_only : boolean
             whether to save entire model or just weights
             NOTE: only `True` is supported at the moment
-        max_save : integer > 0 or -1
-            the max number of models to save. Older model checkpoints
-            will be overwritten if necessary. Set equal to -1 to have
-            no limit
         verbose : integer in {0, 1}
             verbosity
         """
@@ -326,15 +320,11 @@ class ModelCheckpoint(Callback):
             directory = os.path.expanduser(directory)
         self.directory = directory
         self.filename = filename
-        self.file = os.path.join(self.directory, self.filename)
+        self.file = os.path.join(self.directory, self.filename + '.pth.tar')
         self.monitor = monitor
         self.save_best_only = save_best_only
         self.save_weights_only = save_weights_only
-        self.max_save = max_save
         self.verbose = verbose
-
-        if self.max_save > 0:
-            self.old_files = []
 
         # mode = 'min' only supported
         self.best_loss = math.inf
@@ -351,43 +341,31 @@ class ModelCheckpoint(Callback):
 
         th.save(info_dict, self.file)
         if is_best:
-            shutil.copyfile(self.file, 'model_best.pth.tar')
+            shutil.copyfile(self.file,
+                            os.path.join(self.directory,
+                                         '{}_model_best.pth.tar'.
+                                         format(self.filename))
+                            )
 
     def on_epoch_end(self, epoch, logs=None):
-        file = self.file.format(epoch='%03i' % (epoch+1),
-                                loss='%0.4f' % logs[self.monitor])
+        current_loss = logs.get(self.monitor)
+        is_best = current_loss < self.best_loss
+
         if self.save_best_only:
-            current_loss = logs.get(self.monitor)
-            if current_loss is None:
-                pass
-            else:
-                if current_loss < self.best_loss:
-                    if self.verbose > 0:
-                        print('\nEpoch %i: improved from %0.4f to %0.4f \
-                              saving model to %s' % (epoch+1, self.best_loss,
-                                                     current_loss, file))
-                    self.best_loss = current_loss
-                    self.save_checkpoint(epoch, file)
-                    if self.max_save > 0:
-                        if len(self.old_files) == self.max_save:
-                            try:
-                                os.remove(self.old_files[0])
-                            except IOError:
-                                pass
-                            self.old_files = self.old_files[1:]
-                        self.old_files.append(file)
+            if is_best:
+                if self.verbose > 0:
+                    print('\nEpoch %i: improved from %0.4f to %0.4f \
+                            saving model to %s' % (epoch+1, self.best_loss,
+                                                   current_loss, self.file))
+                self.best_loss = current_loss
+                self.save_checkpoint(epoch, is_best)
         else:
             if self.verbose > 0:
-                print('\nEpoch %i: saving model to %s' % (epoch+1, file))
-            self.save_checkpoint(epoch, file)
-            if self.max_save > 0:
-                if len(self.old_files) == self.max_save:
-                    try:
-                        os.remove(self.old_files[0])
-                    except IOError:
-                        pass
-                    self.old_files = self.old_files[1:]
-                self.old_files.append(file)
+                print('\nEpoch %i: saving model to %s' % (epoch+1, self.file))
+            if is_best:
+                self.best_loss = current_loss
+
+            self.save_checkpoint(epoch, is_best)
 
 
 # Estudar
@@ -706,7 +684,6 @@ class LearningRateFinder(Callback):
               str(delta.seconds) + " seconds and " +
               str(delta.microseconds) + " microseconds.")
 
-#         print(self.lrs, self.losses)
         for pg in self.trainer._optimizer.param_groups:
             pg['lr'] = origLR
 

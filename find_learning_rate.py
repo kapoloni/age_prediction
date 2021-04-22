@@ -151,6 +151,6 @@ if __name__ == "__main__":
     lrf.find(data=dataloader, start_LR=1e-10, end_LR=1e+1,
              batch_size=args.batch_size, loss=loss,
              epochs=50,
-             optimizer=optimizer, cuda_device=True)
+             optimizer=optimizer, cuda_device=eval(args.gpu))
     lrf.save_csv(os.path.join(output_folder,
                               'lr_finder' + output_prefix + '.csv'))

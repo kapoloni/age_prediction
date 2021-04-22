@@ -181,8 +181,7 @@ if __name__ == "__main__":
 
     callbacks.append(ModelCheckpoint(directory=output_folder,
                                      filename='ckpt_' +
-                                              output_prefix +
-                                              '.pth.tar'))
+                                              output_prefix))
 
     callbacks.append(TensorBoardCB(log_dir='_'.join(
                                                output_prefix.split("_")[1:]
@@ -199,4 +198,4 @@ if __name__ == "__main__":
     trainer.fit_loader(dataloader.train_dataloader(),
                        dataloader.val_dataloader(),
                        num_epoch=int(args.num_epochs),
-                       cuda_device=True)
+                       cuda_device=eval(args.gpu))
