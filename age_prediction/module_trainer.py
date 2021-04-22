@@ -14,11 +14,11 @@ import torch.nn as nn
 
 # local imports
 from age_prediction._utils import (_validate_loss_input,
-                                  _validate_metric_input,
-                                  _validate_optimizer_input,
-                                  _is_tuple_or_list,
-                                  _parse_num_inputs_and_targets_from_loader,
-                                  )
+                                   _validate_metric_input,
+                                   _validate_optimizer_input,
+                                   _is_tuple_or_list,
+                                   _parse_num_inputs_and_targets_from_loader,
+                                   )
 
 from age_prediction.callbacks import CallbackContainer, History, TQDM
 from age_prediction.metrics import MetricContainer, MetricCallback
