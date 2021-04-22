@@ -170,11 +170,11 @@ if __name__ == "__main__":
                float(args.clr.split(",")[-1].split("]")[0])]
         print('clr limits', clr)
         # 10-3.1, 10-1.25
-        num_samples = len(dataloader.train_dataloader().inputs[0])
-        step_size = 6*(num_samples//args.batch_size)
+        step_size = 6*(train_size//args.batch_size)
+        print(step_size)
         callbacks.append(CyclicLR(base_lr=10**clr[0],
                                   max_lr=10**clr[1],
-                                  mode='triagular2',
+                                  mode='triangular2',
                                   step_size=step_size
                                   )
                          )
