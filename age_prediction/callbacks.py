@@ -1,12 +1,14 @@
 """
 SuperModule Callbacks
 """
-
 from __future__ import absolute_import
 from __future__ import print_function
 
 from collections import OrderedDict
 from collections import Iterable
+from age_prediction.utils import (_get_current_time,
+                                  _path_to_string,
+                                  _convert_img_plot)
 
 import os
 import csv
@@ -16,23 +18,11 @@ import math
 from tqdm import tqdm
 import numpy as np
 import torch as th
-
 import pandas as pd
+# import datetime
 
 from torch.utils.tensorboard import SummaryWriter
 import torchvision
-from torchvision import transforms
-from PIL import Image
-from skimage.exposure import rescale_intensity
-# from ._utils import (_get_current_time)
-import datetime
-
-
-def _get_current_time(strft=False):
-    if strft:
-        return datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p")
-    else:
-        return datetime.datetime.now()
 
 
 class CallbackContainer(object):
@@ -275,19 +265,6 @@ class History(Callback):
 class ModelCheckpoint(Callback):
     """
     Model Checkpoint to save model weights during training
-
-    save_checkpoint({
-                'epoch': epoch + 1,
-                'arch': args.arch,
-                'state_dict': model.state_dict(),
-                'best_prec1': best_prec1,
-                'optimizer' : optimizer.state_dict(),
-            }
-    def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
-        th.save(state, filename)
-        if is_best:
-            shutil.copyfile(filename, 'model_best.pth.tar')
-
     """
 
     def __init__(self,
@@ -295,24 +272,20 @@ class ModelCheckpoint(Callback):
                  filename='ckpt.pth.tar',
                  monitor='val_loss',
                  save_best_only=False,
-                 save_weights_only=True,
                  verbose=0):
         """
         Model Checkpoint to save model weights during training
 
         Arguments
         ---------
-        file : string
-            file to which model will be saved.
-            It can be written 'filename_{epoch}_{loss}' and those
-            values will be filled in before saving.
+        directory: string
+            folder to which model will be saved.
+        filename : string
+            fileneme to which model will be saved.
         monitor : string in {'val_loss', 'loss'}
             whether to monitor train or val loss
         save_best_only : boolean
             whether to only save if monitored value has improved
-        save_weight_only : boolean
-            whether to save entire model or just weights
-            NOTE: only `True` is supported at the moment
         verbose : integer in {0, 1}
             verbosity
         """
@@ -323,7 +296,6 @@ class ModelCheckpoint(Callback):
         self.file = os.path.join(self.directory, self.filename + '.pth.tar')
         self.monitor = monitor
         self.save_best_only = save_best_only
-        self.save_weights_only = save_weights_only
         self.verbose = verbose
 
         # mode = 'min' only supported
@@ -444,7 +416,7 @@ class CSVLogger(Callback):
             path to csv file
         separator : string
             delimiter for file
-        apped : boolean
+        append : boolean
             whether to append result to existing file or make new file
         """
         self.file = file
@@ -521,6 +493,7 @@ class LambdaCallback(Callback):
     """
     Callback for creating simple, custom callbacks on-the-fly.
     """
+
     def __init__(self,
                  on_epoch_begin=None,
                  on_epoch_end=None,
@@ -558,6 +531,13 @@ class LambdaCallback(Callback):
 
 
 class LearningRateFinder(Callback):
+    """
+    Learning rate finder to test the learning rate limits
+        between two boundaries in an exponential manner.
+    Implementation based on:
+    https://www.pyimagesearch.com/2019/08/05/keras-learning-rate-finder/
+    Detailed in this paper (https://arxiv.org/abs/1506.01186).
+    """
     #     https://www.pyimagesearch.com/2019/08/05/keras-learning-rate-finder/
     def __init__(self,
                  trainer,
@@ -579,6 +559,22 @@ class LearningRateFinder(Callback):
         self.batch_num = 0
         self.weights_file = None
 
+        """
+        Learning rate finder to test the learning rate limits
+        between two boundaries in an exponential manner.
+
+        Arguments
+        ---------
+        trainer: module_trainer
+            module_trainer.
+        stop_factor : (int, optional)
+            stop training if loss if larger than best_loss * stop_factor.
+            Default: 4.
+        beta : (float, optional)
+            factor to smooth the loss
+            Default: 0.98.
+        """
+
     def reset(self):
         # re-initialize all variables from our constructor
         self.lrs = []
@@ -595,7 +591,7 @@ class LearningRateFinder(Callback):
         lr = self.trainer._optimizer.param_groups[0]['lr']
         self.lrs.append(lr)
         # grab the loss at the end of this batch, increment the total
-        # number of batches processed, compute the average average
+        # number of batches processed, compute the average
         # loss, smooth it, and update the losses list with the
         # smoothed value
         cur_loss = logs["loss"]
@@ -629,6 +625,35 @@ class LearningRateFinder(Callback):
              sample_size=2048,
              epochs=None,
              cuda_device=True):
+        """
+        Find the range.
+
+        Arguments
+        ---------
+        data: torch.utils.data.DataLoader
+            the training and validation set data loader.
+        start_LR : float
+            the starting learning rate for the range test.
+            Default: None (uses the learning rate from the optimizer).
+        end_LR : float
+            the maximum learning rate to test.
+            size of the batch
+        loss : (th.nn loss, optional)
+            which loss function to use.
+            Default: th.nn.L1Loss.
+        optimizer : (torch.optim, optional)
+            which optimizer to use
+            Default: adam.
+        sample_size: (int, optional)
+            size of the training samples.
+            Default: 2048.
+        epochs : (int, optional)
+            how many epochs to run
+            Default: None (automatically calculates the epochs).
+        cuda_device : (bool, optional)
+            whether to use gpu or cpu
+            Default: True (uses cuda).
+        """
 
         # reset our class-specific variables
         self.reset()
@@ -695,11 +720,64 @@ class LearningRateFinder(Callback):
 
 
 class CyclicLR(Callback):
-    #     https://github.com/bckenstler/CLR
-    def __init__(self, base_lr=0.001, max_lr=0.006,
+    '''
+    The method cycles the learning rate between two boundaries with
+    some constant frequency, as detailed in this paper
+    (https://arxiv.org/abs/1506.01186).
+    Implementation based on:
+    https://github.com/bckenstler/CLR
+
+    The amplitude of the cycle can be scaled on a per-iteration
+    or  per-cycle basis.
+    This class has three built-in policies, as put forth in the paper.
+    "triangular":
+        A basic triangular cycle w/ no amplitude scaling.
+    "triangular2":
+        A basic triangular cycle that scales initial
+        amplitude by half each cycle.
+    "exp_range":
+        A cycle that scales initial amplitude by
+        gamma**(cycle iterations) at each
+        cycle iteration.
+    '''
+
+    def __init__(self,
+                 base_lr=0.001, max_lr=0.006,
                  step_size=2000., mode='triangular',
-                 gamma=1., scale_fn=None,
+                 gamma=1.,
                  scale_mode='cycle'):
+        """
+        Cyclical Learning Rate.
+
+        Arguments
+        ---------
+        base_lr: float
+            initial learning rate which is the
+            lower boundary in the cycle.
+        max_lr: float
+            upper boundary in the cycle. Functionally,
+            it defines the cycle amplitude (max_lr - base_lr).
+            The lr at any cycle is the sum of base_lr
+            and some scaling of the amplitude;
+            therefore max_lr may not actually be
+            reached depending on scaling function.
+        step_size: int
+            number of training iterations per
+            half cycle. Authors suggest setting step_size
+            2-8 x training iterations in epoch.
+        mode: ({triangular, triangular2, exp_range}, optional)
+            Default 'triangular'.
+            Values correspond to policies detailed above.
+            If scale_fn is not None, this argument is ignored.
+        gamma: (float, optional)
+            constant in 'exp_range' scaling function:
+            gamma**(cycle iterations)
+        scale_mode: ({'cycle', 'iterations'}, optional).
+            Defines whether scale_fn is evaluated on
+            cycle number or cycle iterations (training
+            iterations since start of cycle).
+            Default is 'cycle'.
+        """
 
         super(CyclicLR, self).__init__()
 
@@ -713,19 +791,22 @@ class CyclicLR(Callback):
         self.lrs = []
         self.iterations = []
 
-        if scale_fn is None:
-            if self.mode == 'triangular':
-                self.scale_fn = lambda x: 1.
-                self.scale_mode = 'cycle'
-            elif self.mode == 'triangular2':
-                self.scale_fn = lambda x: 1/(2.**(x-1))
-                self.scale_mode = 'cycle'
-            elif self.mode == 'exp_range':
-                self.scale_fn = lambda x: gamma**(x)
-                self.scale_mode = 'iterations'
-        else:
-            self.scale_fn = scale_fn
-            self.scale_mode = scale_mode
+        if self.mode == 'triangular':
+            self.scale_fn = lambda x: 1.
+            self.scale_mode = 'cycle'
+        elif self.mode == 'triangular2':
+            self.scale_fn = lambda x: 1/(2.**(x-1))
+            self.scale_mode = 'cycle'
+        elif self.mode == 'exp_range':
+            self.scale_fn = lambda x: gamma**(x)
+            self.scale_mode = 'iterations'
+
+        # scale_fn:
+        # Custom scaling policy defined by a single
+        # argument lambda function, where
+        # 0 <= scale_fn(x) <= 1 for all x >= 0.
+        # mode paramater is ignored
+
         self.clr_iterations = 0.
         self.trn_iterations = 0.
         self.history = {}
@@ -782,44 +863,35 @@ class CyclicLR(Callback):
             pg['lr'] = self.clr()
 
 
-def path_to_string(path):
-    if isinstance(path, os.PathLike):
-        return os.fspath(path)
-    return path
-
-
-def convert_img_plot(img):
-    img = rescale_intensity(img.cpu().detach().numpy(), out_range=(0, 255))
-    im = Image.fromarray(np.float32(img)).convert('LA')
-    pil_to_tensor = transforms.ToTensor()(im)
-    return pil_to_tensor
-
-
 class TensorBoardCB(Callback):
 
     def __init__(self,
                  log_dir='runs',
-                 max_img_grid=12):
+                 max_img_grid=12,
+                 imgs_batch=1):
         self.max_img_grid = max_img_grid
         self.log_dir = log_dir
+        self.imgs_batch = imgs_batch
 
     def on_train_begin(self, logs={}):
         self._epoch = 0
         self.has_val_data = logs['has_val_data']
         batch_size = logs['len_inputs']/logs['num_batches']
-        self._writer = SummaryWriter(comment=path_to_string(
+        self._writer = SummaryWriter(comment=_path_to_string(
                                                 self.log_dir))
 
         self.max_img_grid = self.max_img_grid if \
             self.max_img_grid < batch_size else batch_size
 
     def on_batch_end(self, batch, logs=None):
-        pil_images = []
-        for i in range(self.max_img_grid):
-            img = self.batch_imgs[i, 0, :, :, 40]
-            pil_images.append(convert_img_plot(img))
-        grid = torchvision.utils.make_grid(pil_images)
-        self._writer.add_image('images'+str(batch+1), grid, 0)
+        # Quantity of batches to save image
+        if batch in range(self.imgs_batch):
+            pil_images = []
+            for i in range(self.max_img_grid):
+                img = self.batch_imgs[i, 0, :, :, 40]
+                pil_images.append(_convert_img_plot(img))
+            grid = torchvision.utils.make_grid(pil_images)
+            self._writer.add_image('images'+str(batch+1), grid, 0)
 
     def on_epoch_end(self, epoch, logs=None):
         metrics = []

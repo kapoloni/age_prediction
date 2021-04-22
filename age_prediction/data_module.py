@@ -1,10 +1,11 @@
 import torchio as tio
 import SimpleITK as sitk
-from age_prediction.custom_dataset import MyDataSet, LoadDataPath, Compose
 import torchio.transforms as transforms
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import numpy as np
+# Local import
+from age_prediction.custom_dataset import MyDataSet, LoadDataPath, Compose
 
 
 class MyDataModule(nn.Module):

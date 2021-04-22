@@ -1,10 +1,16 @@
-
-import datetime
-
+"""
+Utility functions for the trainer module
+"""
+# Third party imports
 import torch.nn.functional as F
 import torch.optim as optim
 
-from .metrics import Metric, CategoricalAccuracy, BinaryAccuracy, MSE, MAE
+# Local application imports
+from age_prediction.metrics import (Metric,
+                                    CategoricalAccuracy,
+                                    BinaryAccuracy,
+                                    MSE,
+                                    MAE)
 
 
 def _is_iterable(x):
@@ -81,16 +87,3 @@ def _validate_optimizer_input(optimizer):
         return optimizer
     else:
         raise ValueError('Invalid optimizer input')
-
-
-def _get_current_time(strft=False):
-    if strft:
-        return datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p")
-    else:
-        return datetime.datetime.now()
-
-
-def _process_array_argument(x):
-    if not _is_tuple_or_list(x):
-        x = [x]
-    return x

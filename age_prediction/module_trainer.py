@@ -1,8 +1,8 @@
 """
 Trainer module
 """
-# from __future__ import print_function
-# from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 import functools
@@ -13,15 +13,15 @@ import torch as th
 import torch.nn as nn
 
 # local imports
-from ._utils import (_validate_loss_input,
-                     _validate_metric_input,
-                     _validate_optimizer_input,
-                     _is_tuple_or_list,
-                     _parse_num_inputs_and_targets_from_loader,
-                     )
+from age_prediction._utils import (_validate_loss_input,
+                                  _validate_metric_input,
+                                  _validate_optimizer_input,
+                                  _is_tuple_or_list,
+                                  _parse_num_inputs_and_targets_from_loader,
+                                  )
 
-from .callbacks import CallbackContainer, History, TQDM
-from .metrics import MetricContainer, MetricCallback
+from age_prediction.callbacks import CallbackContainer, History, TQDM
+from age_prediction.metrics import MetricContainer, MetricCallback
 
 
 class ModuleTrainer(object):
@@ -160,9 +160,12 @@ class ModuleTrainer(object):
                                                self.metric_container})
             # If using tensorboard callback
             imgs_batch = False
+            tb = False
             for callback in callback_container.callbacks:
                 if 'TensorBoardCB' in str(callback):
-                    imgs_batch = True
+                    tb = True
+                    if callback.imgs_batch:
+                        imgs_batch = callback.imgs_batch
 
             for epoch_idx in range(num_epoch):
                 epoch_logs = {}
@@ -186,7 +189,8 @@ class ModuleTrainer(object):
                                                     input_batch, target_batch)
 
                     # --------TensorBoard-----------#
-                    if imgs_batch:
+                    # Quantity of batches to save images
+                    if tb and (batch_idx in range(imgs_batch)):
                         callback_container.load_images_batch(input_batch)
 
                     # ----------Optimization--------#

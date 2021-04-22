@@ -1,9 +1,12 @@
+"""
+Metrics module
+"""
 
 import torch as th
 from torch import nn
 import numpy as np
-
-from .callbacks import Callback
+# Local import
+from age_prediction.callbacks import Callback
 
 
 class MetricContainer(object):

@@ -185,7 +185,9 @@ if __name__ == "__main__":
 
     callbacks.append(TensorBoardCB(log_dir='_'.join(
                                                output_prefix.split("_")[1:]
-                                               ), max_img_grid=16))
+                                               ),
+                                   max_img_grid=16,
+                                   imgs_batch=1))
 
     #  Train
     trainer = ModuleTrainer(model.to(device))

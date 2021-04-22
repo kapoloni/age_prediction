@@ -3,9 +3,11 @@ import torch
 import numpy as np
 import torchio as tio
 import SimpleITK as sitk
-from age_prediction.pandas_reader import PandasReader
 from torch.utils import data
-from ._utils import (_process_array_argument)
+
+# Local import
+from age_prediction.pandas_reader import PandasReader
+from age_prediction.utils import (_process_array_argument)
 
 
 class MyDataSet(data.Dataset):
