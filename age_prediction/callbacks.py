@@ -1,28 +1,28 @@
 """
 SuperModule Callbacks
 """
+# Standard library imports
 from __future__ import absolute_import
 from __future__ import print_function
-
 from collections import OrderedDict
 from collections import Iterable
-from age_prediction.utils import (_get_current_time,
-                                  _path_to_string,
-                                  _convert_img_plot)
-
 import os
 import csv
 import shutil
 import math
-
+import pandas as pd
 from tqdm import tqdm
 import numpy as np
-import torch as th
-import pandas as pd
-# import datetime
 
+# Third party imports
+import torch as th
 from torch.utils.tensorboard import SummaryWriter
 import torchvision
+
+# Local application imports
+from .utils import (_get_current_time,
+                    _path_to_string,
+                    _convert_img_plot)
 
 
 class CallbackContainer(object):

@@ -6,11 +6,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 # Local application imports
-from age_prediction.metrics import (Metric,
-                                    CategoricalAccuracy,
-                                    BinaryAccuracy,
-                                    MSE,
-                                    MAE)
+from .metrics import (Metric,
+                      CategoricalAccuracy,
+                      BinaryAccuracy,
+                      MSE,
+                      MAE)
 
 
 def _is_iterable(x):

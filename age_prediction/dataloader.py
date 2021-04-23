@@ -1,25 +1,32 @@
-import torchio as tio
+"""
+DataLoader Module
+"""
+# Standard library imports
+import numpy as np
+
+# Third party imports
 import SimpleITK as sitk
+import torch.nn as nn
+import torchio as tio
 import torchio.transforms as transforms
 from torch.utils.data import DataLoader
-import torch.nn as nn
-import numpy as np
-# Local import
-from age_prediction.custom_dataset import MyDataSet, LoadDataPath, Compose
+
+# Local application imports
+from .dataset import MyDataSet, LoadDataPath, Compose
 
 
-class MyDataModule(nn.Module):
+class MyDataLoader(nn.Module):
 
     def __init__(self,
                  database: list,
                  csv_data: list,
                  side: str,
                  batch: int,
-                 data_aug=True,
-                 age_range=None,
-                 train_file='train_all.csv',
-                 val_file='val_exp.csv',
-                 test_file='test_exp.csv'):
+                 data_aug: bool = True,
+                 age_range: list = None,
+                 train_file: str = 'train_all.csv',
+                 val_file: str = 'val_exp.csv',
+                 test_file: str = 'test_exp.csv'):
         super().__init__()
         self.database = database
         self.csv_data = csv_data
@@ -34,6 +41,35 @@ class MyDataModule(nn.Module):
                 raise ValueError('Age_range should be a list')
         self.age_range = age_range
 
+        """
+            Class to create the DataLoader
+
+            Arguments
+            ---------
+            database: (string)
+                Database name
+            csv_data: (string)
+                Folder that contains the csv data
+            side : ({L or R}, string)
+                Hippocampal side image
+            batch: (int)
+                Size of the batch
+            data_aug: (bool, optional)
+                Whether to train with data augmentation or not
+            age_range : (List, optional)
+                Age range to delimit the train
+                Default: None
+            train_file: (string, optional)
+                Filename with the image names for training
+                Default: train_all.csv
+            val_file: (string, optional)
+                Filename with the image names for validation
+                Default: val_exp.csv
+            test_file: (string, optional)
+                Filename with the image names for validation
+                Default: test_exp.csv
+        """
+
     def prepare_data(self, stage: str = None):
 
         # called only on 1 GPU
@@ -43,8 +79,7 @@ class MyDataModule(nn.Module):
                                       csv_data=self.csv_data,
                                       side=self.side,
                                       data_aug=self.data_aug,
-                                      train=True,
-                                      val=False,
+                                      stage='train',
                                       age_range=self.age_range,
                                       train_file=self.train_file
                                       )
@@ -56,8 +91,7 @@ class MyDataModule(nn.Module):
                                     csv_data=self.csv_data,
                                     side=self.side,
                                     data_aug=False,
-                                    train=False,
-                                    val=True,
+                                    stage='val',
                                     val_file=self.val_file)
 
             val_label = val_data.y
@@ -73,8 +107,7 @@ class MyDataModule(nn.Module):
                                      csv_data=self.csv_data,
                                      side=self.side,
                                      data_aug=False,
-                                     train=False,
-                                     val=False,
+                                     stage='test',
                                      test_file=self.test_file)
 
             self.testpath = test_data.scan_paths
@@ -84,8 +117,7 @@ class MyDataModule(nn.Module):
                                      csv_data=self.csv_data,
                                      side=self.side,
                                      data_aug=False,
-                                     train=False,
-                                     val=True,
+                                     stage='val',
                                      val_file=self.test_file)
 
             self.testpath = test_data.scan_paths
