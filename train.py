@@ -8,8 +8,8 @@ from datetime import date
 
 from age_prediction.models.\
     efficientnet_pytorch_3d import EfficientNet3D as EfNetB0
-from age_prediction.data_module import MyDataModule
-from age_prediction.module_trainer import ModuleTrainer
+from age_prediction.dataloader import MyDataLoader
+from age_prediction.trainer import ModuleTrainer
 from age_prediction.callbacks import ModelCheckpoint, CyclicLR, \
                                       TensorBoardCB, CSVLogger
 from age_prediction.metrics import MSE, MAE
@@ -88,7 +88,7 @@ if __name__ == "__main__":
             val_file = 'val_exp.csv'
             print("Using a unknown age range")
 
-    dataloader = MyDataModule(database=args.database,
+    dataloader = MyDataLoader(database=args.database,
                               csv_data=args.csv_data,
                               side=side,
                               batch=args.batch_size,
