@@ -268,11 +268,11 @@ class ModelCheckpoint(Callback):
     """
 
     def __init__(self,
-                 directory,
-                 filename='ckpt.pth.tar',
-                 monitor='val_loss',
-                 save_best_only=False,
-                 verbose=0):
+                 directory: str,
+                 filename: str = 'ckpt.pth.tar',
+                 monitor: str = 'val_loss',
+                 save_best_only: bool = False,
+                 verbose: int = 0):
         """
         Model Checkpoint to save model weights during training
 
@@ -347,24 +347,24 @@ class EarlyStopping(Callback):
     """
 
     def __init__(self,
-                 monitor='val_loss',
-                 min_delta=0,
-                 patience=5):
+                 monitor: str = 'val_loss',
+                 min_delta: float = 0,
+                 patience: int = 5):
         """
-        EarlyStopping callback to exit the training loop if training or
-        validation loss does not improve by a certain amount for a certain
-        number of epochs
+            EarlyStopping callback to exit the training loop if training or
+            validation loss does not improve by a certain amount for a certain
+            number of epochs
 
-        Arguments
-        ---------
-        monitor : string in {'val_loss', 'loss'}
-            whether to monitor train or val loss
-        min_delta : float
-            minimum change in monitored value to qualify as improvement.
-            This number should be positive.
-        patience : integer
-            number of epochs to wait for improvment before terminating.
-            the counter be reset after each improvment
+            Arguments
+            ---------
+            monitor : string in {'val_loss', 'loss'}
+                whether to monitor train or val loss
+            min_delta : float
+                minimum change in monitored value to qualify as improvement.
+                This number should be positive.
+            patience : integer
+                number of epochs to wait for improvment before terminating.
+                the counter be reset after each improvment
         """
         self.monitor = monitor
         self.min_delta = min_delta
@@ -405,19 +405,19 @@ class CSVLogger(Callback):
 
     def __init__(self,
                  file,
-                 separator=',',
-                 append=False):
+                 separator: str = ',',
+                 append: bool = False):
         """
-        Logs epoch-level metrics to a CSV file
+            Logs epoch-level metrics to a CSV file
 
-        Arguments
-        ---------
-        file : string
-            path to csv file
-        separator : string
-            delimiter for file
-        append : boolean
-            whether to append result to existing file or make new file
+            Arguments
+            ---------
+            file : string
+                path to csv file
+            separator : string
+                delimiter for file
+            append : boolean
+                whether to append result to existing file or make new file
         """
         self.file = file
         self.sep = separator
@@ -538,11 +538,11 @@ class LearningRateFinder(Callback):
     https://www.pyimagesearch.com/2019/08/05/keras-learning-rate-finder/
     Detailed in this paper (https://arxiv.org/abs/1506.01186).
     """
-    #     https://www.pyimagesearch.com/2019/08/05/keras-learning-rate-finder/
+
     def __init__(self,
                  trainer,
-                 stop_factor=4,
-                 beta=0.98
+                 stop_factor: int = 4,
+                 beta: float = 0.98
                  ):
         self.trainer = trainer
         self.best_loss = 1e9
@@ -617,42 +617,44 @@ class LearningRateFinder(Callback):
 
     def find(self,
              data,
-             start_LR,
-             end_LR,
-             batch_size,
+             start_LR: float,
+             end_LR: float,
+             batch_size: int,
              loss=None,
              optimizer='adam',
-             sample_size=2048,
-             epochs=None,
-             cuda_device=True):
+             sample_size: int = 2048,
+             epochs: int = None,
+             cuda_device: bool = True):
         """
-        Find the range.
+            Find the range.
 
-        Arguments
-        ---------
-        data: torch.utils.data.DataLoader
-            the training and validation set data loader.
-        start_LR : float
-            the starting learning rate for the range test.
-            Default: None (uses the learning rate from the optimizer).
-        end_LR : float
-            the maximum learning rate to test.
-            size of the batch
-        loss : (th.nn loss, optional)
-            which loss function to use.
-            Default: th.nn.L1Loss.
-        optimizer : (torch.optim, optional)
-            which optimizer to use
-            Default: adam.
-        sample_size: (int, optional)
-            size of the training samples.
-            Default: 2048.
-        epochs : (int, optional)
-            how many epochs to run
-            Default: None (automatically calculates the epochs).
-        cuda_device : (bool, optional)
-            whether to use gpu or cpu
-            Default: True (uses cuda).
+            Arguments
+            ---------
+            data: torch.utils.data.DataLoader
+                the training and validation set data loader.
+            start_LR : float
+                the starting learning rate for the range test.
+                Default: None (uses the learning rate from the optimizer).
+            end_LR : float
+                the maximum learning rate to test.
+                size of the batch
+            batch_size: int
+                the size of the batch
+            loss : (th.nn loss, optional)
+                which loss function to use.
+                Default: th.nn.L1Loss.
+            optimizer : (torch.optim, optional)
+                which optimizer to use
+                Default: adam.
+            sample_size: (int, optional)
+                size of the training samples.
+                Default: 2048.
+            epochs : (int, optional)
+                how many epochs to run
+                Default: None (automatically calculates the epochs).
+            cuda_device : (bool, optional)
+                whether to use gpu or cpu
+                Default: True (uses cuda).
         """
 
         # reset our class-specific variables
@@ -721,62 +723,64 @@ class LearningRateFinder(Callback):
 
 class CyclicLR(Callback):
     '''
-    The method cycles the learning rate between two boundaries with
-    some constant frequency, as detailed in this paper
-    (https://arxiv.org/abs/1506.01186).
-    Implementation based on:
-    https://github.com/bckenstler/CLR
+        The method cycles the learning rate between two boundaries with
+        some constant frequency, as detailed in this paper
+        (https://arxiv.org/abs/1506.01186).
+        Implementation based on:
+        https://github.com/bckenstler/CLR
 
-    The amplitude of the cycle can be scaled on a per-iteration
-    or  per-cycle basis.
-    This class has three built-in policies, as put forth in the paper.
-    "triangular":
-        A basic triangular cycle w/ no amplitude scaling.
-    "triangular2":
-        A basic triangular cycle that scales initial
-        amplitude by half each cycle.
-    "exp_range":
-        A cycle that scales initial amplitude by
-        gamma**(cycle iterations) at each
-        cycle iteration.
+        The amplitude of the cycle can be scaled on a per-iteration
+        or  per-cycle basis.
+        This class has three built-in policies, as put forth in the paper.
+        "triangular":
+            A basic triangular cycle w/ no amplitude scaling.
+        "triangular2":
+            A basic triangular cycle that scales initial
+            amplitude by half each cycle.
+        "exp_range":
+            A cycle that scales initial amplitude by
+            gamma**(cycle iterations) at each
+            cycle iteration.
     '''
 
     def __init__(self,
-                 base_lr=0.001, max_lr=0.006,
-                 step_size=2000., mode='triangular',
-                 gamma=1.,
-                 scale_mode='cycle'):
+                 base_lr: float = 0.001,
+                 max_lr: float = 0.006,
+                 step_size: float = 2000.,
+                 mode: str = 'triangular',
+                 gamma: float = 1.,
+                 scale_mode: str = 'cycle'):
         """
-        Cyclical Learning Rate.
+            Cyclical Learning Rate.
 
-        Arguments
-        ---------
-        base_lr: float
-            initial learning rate which is the
-            lower boundary in the cycle.
-        max_lr: float
-            upper boundary in the cycle. Functionally,
-            it defines the cycle amplitude (max_lr - base_lr).
-            The lr at any cycle is the sum of base_lr
-            and some scaling of the amplitude;
-            therefore max_lr may not actually be
-            reached depending on scaling function.
-        step_size: int
-            number of training iterations per
-            half cycle. Authors suggest setting step_size
-            2-8 x training iterations in epoch.
-        mode: ({triangular, triangular2, exp_range}, optional)
-            Default 'triangular'.
-            Values correspond to policies detailed above.
-            If scale_fn is not None, this argument is ignored.
-        gamma: (float, optional)
-            constant in 'exp_range' scaling function:
-            gamma**(cycle iterations)
-        scale_mode: ({'cycle', 'iterations'}, optional).
-            Defines whether scale_fn is evaluated on
-            cycle number or cycle iterations (training
-            iterations since start of cycle).
-            Default is 'cycle'.
+            Arguments
+            ---------
+            base_lr: float
+                initial learning rate which is the
+                lower boundary in the cycle.
+            max_lr: float
+                upper boundary in the cycle. Functionally,
+                it defines the cycle amplitude (max_lr - base_lr).
+                The lr at any cycle is the sum of base_lr
+                and some scaling of the amplitude;
+                therefore max_lr may not actually be
+                reached depending on scaling function.
+            step_size: int
+                number of training iterations per
+                half cycle. Authors suggest setting step_size
+                2-8 x training iterations in epoch.
+            mode: ({triangular, triangular2, exp_range}, optional)
+                Default 'triangular'.
+                Values correspond to policies detailed above.
+                If scale_fn is not None, this argument is ignored.
+            gamma: (float, optional)
+                constant in 'exp_range' scaling function:
+                gamma**(cycle iterations)
+            scale_mode: ({'cycle', 'iterations'}, optional).
+                Defines whether scale_fn is evaluated on
+                cycle number or cycle iterations (training
+                iterations since start of cycle).
+                Default is 'cycle'.
         """
 
         super(CyclicLR, self).__init__()
@@ -816,8 +820,9 @@ class CyclicLR(Callback):
     def _reset(self, new_base_lr=None, new_max_lr=None,
                new_step_size=None):
 
-        """Resets cycle iterations.
-        Optional boundary/step size adjustment.
+        """
+            Resets cycle iterations.
+                Optional boundary/step size adjustment.
         """
         self.lrs = []
         self.iterations = []
@@ -864,14 +869,34 @@ class CyclicLR(Callback):
 
 
 class TensorBoardCB(Callback):
+    """
+    Tensor Board Callback
+    """
 
     def __init__(self,
-                 log_dir='runs',
-                 max_img_grid=12,
-                 imgs_batch=1):
+                 log_dir: str = 'runs',
+                 max_img_grid: int = 12,
+                 imgs_batch: int = 1):
         self.max_img_grid = max_img_grid
         self.log_dir = log_dir
         self.imgs_batch = imgs_batch
+
+        """
+            Tensor Board Callback.
+
+            Arguments
+            ---------
+            log_dir: (string, optional)
+                Directory to store the logs
+                Default: runs
+            max_imgs_grid: (int, optional)
+                Max quantity of images to print
+                Default: 12
+            imgs_batch: (int, optional)
+                Quantity of consecutive batches
+                to print the images
+                Default: 1 (only the first)
+        """
 
     def on_train_begin(self, logs={}):
         self._epoch = 0

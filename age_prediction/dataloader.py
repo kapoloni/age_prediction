@@ -16,6 +16,9 @@ from .dataset import MyDataSet, LoadDataPath, Compose
 
 
 class MyDataLoader(nn.Module):
+    """
+    DataLoader created for this specific application
+    """
 
     def __init__(self,
                  database: list,

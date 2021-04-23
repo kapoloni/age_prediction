@@ -1,11 +1,14 @@
 """
 Metrics module
 """
+# Standard library imports
+import numpy as np
 
+# Third party imports
 import torch as th
 from torch import nn
-import numpy as np
-# Local import
+
+# Local application imports
 from age_prediction.callbacks import Callback
 
 

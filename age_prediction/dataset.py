@@ -18,6 +18,10 @@ from .utils import (_process_array_argument)
 
 
 class MyDataSet(data.Dataset):
+    """
+    DataSet created for this specific application
+    """
+
     def __init__(self,
                  inputs: list,
                  targets: list = [],
@@ -88,6 +92,10 @@ class Compose:
 
 
 class LoadDataPath(object):
+    """
+    Class to load the image paths.
+    Created for this specific application.
+    """
 
     def __init__(self,
                  database: str,
