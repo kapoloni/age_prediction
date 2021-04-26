@@ -25,25 +25,9 @@ Using the TorchIO Python library (https://torchio.readthedocs.io/transforms/augm
  <table width="100%" border="0" cellpadding="5">
 	<tr>
 		<td align="center" valign="center">
-		<img src="https://github.com/brunoggregorio/retinanet-cell-detection/blob/master/images/Fig_3a.png" alt="description here" />
+		<img src="https://github.com/kapoloni/age_prediction/blob/main/images/random_batch_image.png" />
 		<br />
-			Gaussian kernel example.
-		</td>
-		<td align="center" valign="center">
-		<img src="https://github.com/brunoggregorio/retinanet-cell-detection/blob/master/images/Fig_3b.png" alt="description here" />
-		<br />
-			Line kernel example.
-		</td>
-		<td align="center" valign="center">
-		<img src="https://github.com/brunoggregorio/retinanet-cell-detection/blob/master/images/Fig_3c.png" alt="description here" />
-		<br />
-			Curve kernel example.
-		</td>
-		<td align="center" valign="center">
-		<img src="https://github.com/brunoggregorio/retinanet-cell-detection/blob/master/images/Fig_4b.png" alt="description here" />
-		<br />
-			Airy disk pattern.
-		</td>
+			Random batch images
 	</tr>
 </table>
 
