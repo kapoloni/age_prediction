@@ -16,7 +16,8 @@ clr = {'L_SGD': '[-2.0,0.]', 'R_SGD': '[-2.0,0.]',
 
 dp = {'L': '0.4', 'R': '0.5'}
 
-for dp in ['0.2', '0.3', '0.4', '0.5', '0.6']:
+# for dp in ['0.2', '0.3', '0.4', '0.5', '0.6']:
+for dp in ['0.4', '0.5', '0.6']:
     for side in ['L']:
         for optimizer in ['RMS']:
             # Finding learning rate - run just once and verify clr limits
