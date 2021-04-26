@@ -20,7 +20,7 @@ def parse_args(args):
     parser.add_argument('--database', help='Database folder',
                         default='../datasets', type=str)
     parser.add_argument('--csv_data', help='Csv infos folder',
-                        default='../csv_data', type=str)
+                        default='database_split', type=str)
     parser.add_argument('--side', help='Left or right hippocampus (L or R)',
                         default='L', type=str)
     parser.add_argument('--data_aug', help='Train with dataAugmentation,\
