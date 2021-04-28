@@ -19,7 +19,7 @@ for dp in ['0.2', '0.3', '0.4', '0.5', '0.6']:
             else:
                 # Train
                 train = './train.py --num_epochs 400 --batch_size 512' + \
-                        '--loss MSE --side ' + side + ' --age_range ' + \
+                        ' --loss MSE --side ' + side + ' --age_range ' + \
                         age + ' --optimizer ' + optimizer + \
                         ' --weight_decay 0 --clr ' + \
                         clr[side + "_" + optimizer] + " --dropout_rate " + dp

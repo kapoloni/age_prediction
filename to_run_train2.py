@@ -2,7 +2,9 @@
 import os
 
 # Learning rate finder
-mode = 'LRF'  # 'Train'
+# mode = 'LRF'
+
+mode = 'Train'
 age = '[70,100]'
 
 snapshot = {'L': 'outputs/ckpt_27-04-2021_age_[0-70]_RMS_' +
@@ -10,7 +12,7 @@ snapshot = {'L': 'outputs/ckpt_27-04-2021_age_[0-70]_RMS_' +
             'R': 'outputs/ckpt_27-04-2021_age_[0-70]_RMS_' +
                  'wd_0_L_dp0.6_model_best.pth.tar'}
 
-clr = {'L_RMS': '[-4.35,-4.1]', 'R_RMS': '[-7.,-3.5]'}
+clr = {'L_RMS': '[-5,-4.15]', 'R_RMS': '[-5,-4.15]'}
 
 for dp in ['0.2', '0.3', '0.4', '0.5', '0.6']:
     for side in ['L']:
@@ -25,8 +27,8 @@ for dp in ['0.2', '0.3', '0.4', '0.5', '0.6']:
                 os.system(flr)
             else:
                 # Train
-                train = './train.py --num_epochs 400 --batch_size 512' + \
-                        '--loss MSE --side ' + side + ' --age_range ' + \
+                train = './train.py --num_epochs 200 --batch_size 512' + \
+                        ' --loss MSE --side ' + side + ' --age_range ' + \
                         age + ' --optimizer ' + optimizer + \
                         ' --weight_decay 0 --clr ' + \
                         clr[side + "_" + optimizer] + \
