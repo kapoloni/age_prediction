@@ -105,8 +105,8 @@ class LoadDataPath(object):
                  data_aug: bool = True,
                  age_range: list = None,
                  train_file: str = 'train_all.csv',
-                 val_file: str = 'val_exp.csv',
-                 test_file: str = 'test_exp.csv'
+                 val_file: str = 'val_70-100.csv',
+                 test_file: str = 'test_70-100.csv'
                  ):
         self.database = database
         self.csv_data = csv_data
@@ -153,10 +153,10 @@ class LoadDataPath(object):
                 Default: train_all.csv
             val_file: (string, optional)
                 Filename with the image names for validation
-                Default: val_exp.csv
+                Default: val_70-100.csv
             test_file: (string, optional)
                 Filename with the image names for validation
-                Default: test_exp.csv
+                Default: test_70-100.csv
         """
 
     def get_imgs_label(self, folder):

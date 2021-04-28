@@ -70,7 +70,7 @@ if __name__ == "__main__":
             val_file = 'val_0-70.csv'
         elif (age_range[0] == 70) & (age_range[1] == 100):
             train_file = 'train_70-100.csv'
-            val_file = 'val_exp.csv'
+            val_file = 'val_70-100.csv'
         else:
             train_file = 'train_all.csv'
             val_file = 'val_exp.csv'
