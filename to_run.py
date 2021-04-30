@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 import os
 
-mode = 'LRF'  # 'Train'
+# mode = 'LRF' 
+mode = 'Train'
 age = '[0,70]'
 
 clr = {'L_RMS': '[-4.37,-4.09]', 'R_RMS': '[-4.37,-4.09]'}
 
 for dp in ['0.2', '0.3', '0.4', '0.5', '0.6']:
-    for side in ['L']:
+    for side in ['R']:
         for optimizer in ['RMS']:
             if mode == 'LRF':
                 # Finding learning rate - run just once and verify clr limits

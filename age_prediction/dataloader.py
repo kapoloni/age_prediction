@@ -76,7 +76,7 @@ class MyDataLoader(nn.Module):
     def prepare_data(self, stage: str = None):
 
         # called only on 1 GPU
-        print("Preparing data")
+        # print("Preparing data")
         if stage == 'fit' or stage is None:
             train_data = LoadDataPath(database=self.database,
                                       csv_data=self.csv_data,
@@ -134,7 +134,7 @@ class MyDataLoader(nn.Module):
         ])
 
     def setup(self, stage: [str] = None):
-        print("Setup data")
+        # print("Setup data")
         # called on every GPU
         if stage == 'fit' or stage is None:
             self.train = MyDataSet(inputs=self.trainpath,

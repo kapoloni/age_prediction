@@ -370,23 +370,29 @@ class EarlyStopping(Callback):
         self.min_delta = min_delta
         self.patience = patience
         self.wait = 0
-        self.best_loss = 1e-15
+        self.best_loss = None
         self.stopped_epoch = 0
         super(EarlyStopping, self).__init__()
 
     def on_train_begin(self, logs=None):
         self.wait = 0
-        self.best_loss = 1e15
 
     def on_epoch_end(self, epoch, logs=None):
         current_loss = logs.get(self.monitor)
+
+        # init best loss
+        if self.best_score is None and current_loss is not None:
+            self.best_score = current_loss
+
         if current_loss is None:
             pass
         else:
+            # if loss < best loss
             if (current_loss - self.best_loss) < -self.min_delta:
                 self.best_loss = current_loss
+                # Save checkpoint by default
                 self.wait = 1
-            else:
+            else:  # if loss did not improve
                 if self.wait >= self.patience:
                     self.stopped_epoch = epoch + 1
                     self.trainer._stop_training = True

@@ -152,7 +152,7 @@ class EfficientNet3D(nn.Module):
         out_channels = round_filters(1280, self._global_params)
         self._conv_head = Conv3d(in_channels, out_channels, kernel_size=1, bias=False)
         self._bn1 = nn.BatchNorm3d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
-        print('Dropout', self._global_params.dropout_rate)
+        # print('Dropout', self._global_params.dropout_rate)
         # Final linear layer
         self._avg_pooling = nn.AdaptiveAvgPool3d(1)
         self._dropout = nn.Dropout(self._global_params.dropout_rate)
