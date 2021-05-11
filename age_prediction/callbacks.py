@@ -272,7 +272,8 @@ class ModelCheckpoint(Callback):
                  filename: str = 'ckpt.pth.tar',
                  monitor: str = 'val_loss',
                  save_best_only: bool = False,
-                 verbose: int = 0):
+                 verbose: int = 0,
+                 clr: bool = False):
         """
         Model Checkpoint to save model weights during training
 
@@ -297,6 +298,7 @@ class ModelCheckpoint(Callback):
         self.monitor = monitor
         self.save_best_only = save_best_only
         self.verbose = verbose
+        self.clr = clr
 
         # mode = 'min' only supported
         self.best_loss = math.inf
@@ -319,9 +321,18 @@ class ModelCheckpoint(Callback):
                                          format(self.filename))
                             )
 
+    def on_train_begin(self, logs=None):
+        self.can_save = True
+
     def on_epoch_end(self, epoch, logs=None):
+        if self.clr:
+            if (epoch + 1) % 12 == 0:
+                self.can_save = True
+            else:
+                self.can_save = False
         current_loss = logs.get(self.monitor)
-        is_best = current_loss < self.best_loss
+
+        is_best = (current_loss < self.best_loss) & self.can_save
 
         if self.save_best_only:
             if is_best:
@@ -349,7 +360,8 @@ class EarlyStopping(Callback):
     def __init__(self,
                  monitor: str = 'val_loss',
                  min_delta: float = 0,
-                 patience: int = 5):
+                 patience: int = 5,
+                 clr: bool = False):
         """
             EarlyStopping callback to exit the training loop if training or
             validation loss does not improve by a certain amount for a certain
@@ -372,17 +384,19 @@ class EarlyStopping(Callback):
         self.wait = 0
         self.best_loss = None
         self.stopped_epoch = 0
+        self.clr = clr
+        self.best_epoch = 0
         super(EarlyStopping, self).__init__()
 
     def on_train_begin(self, logs=None):
         self.wait = 0
+        self.can_stop = True
 
     def on_epoch_end(self, epoch, logs=None):
         current_loss = logs.get(self.monitor)
-
         # init best loss
-        if self.best_score is None and current_loss is not None:
-            self.best_score = current_loss
+        if self.best_loss is None and current_loss is not None:
+            self.best_loss = current_loss
 
         if current_loss is None:
             pass
@@ -390,10 +404,18 @@ class EarlyStopping(Callback):
             # if loss < best loss
             if (current_loss - self.best_loss) < -self.min_delta:
                 self.best_loss = current_loss
+                self.best_epoch = epoch + 1
                 # Save checkpoint by default
                 self.wait = 1
-            else:  # if loss did not improve
-                if self.wait >= self.patience:
+            else:
+                # Check if is the end of a cycle
+                if self.clr:
+                    if self.best_epoch % 12 == 0:
+                        self.can_stop = True
+                    else:
+                        self.can_stop = False
+                # If loss did not improve
+                if (self.wait >= self.patience) & self.can_stop:
                     self.stopped_epoch = epoch + 1
                     self.trainer._stop_training = True
                 self.wait += 1

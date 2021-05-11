@@ -5,14 +5,49 @@ import os
 import torch
 import torch.nn as nn
 from datetime import date
-
+import math
 from age_prediction.models.\
     efficientnet_pytorch_3d import EfficientNet3D as EfNetB0
 from age_prediction.dataloader import MyDataLoader
 from age_prediction.trainer import ModuleTrainer
 from age_prediction.callbacks import ModelCheckpoint, CyclicLR, \
-                                      TensorBoardCB, CSVLogger
+                                      TensorBoardCB, CSVLogger, \
+                                      EarlyStopping
 from age_prediction.metrics import MSE, MAE
+
+
+def new_batch_size(batch_size, train_size, up=True):
+    while(train_size % batch_size != 0):
+        if up:
+            batch_size += 1
+        else:
+            batch_size -= 1
+    return int(batch_size)
+
+
+def new_epoch(num_epochs, batch_size, up=True):
+    # demoro 12 épocas para 1 ciclo
+    while(num_epochs % 12 != 0):
+        if up:
+            num_epochs += 1
+        else:
+            num_epochs -= 1
+    return int(num_epochs)
+
+# def convert_number_epochs(batch_step, num_epochs, cycle):
+#     total_iter = num_epochs * batch_step
+#     if total_iter % cycle == 0:
+#         return num_epochs
+#     else:
+#         completed_cycles = math.ceil(total_iter / cycle)
+#         _total_iter = cycle*completed_cycles
+#         if _total_iter % batch_step != 0:
+#             print("Choose a different batch size, \
+#                 the training should stop only at the end of a cycle")
+#             sys.exit(0)
+#         else:
+#             num_epochs = _total_iter // batch_step
+#     return num_epochs
 
 
 def parse_args(args):
@@ -38,7 +73,8 @@ def parse_args(args):
                         (.pth.tar).', default=None)
     parser.add_argument('--batch_size', help='Batch size',
                         default=128, type=int)
-    parser.add_argument('--num_epochs', help='Number of epochs', default=250)
+    parser.add_argument(
+        '--num_epochs', help='Number of epochs', default=250, type=int)
     parser.add_argument('--loss', help='Loss function (KLDiv or MAE)',
                         default='KLDiv', type=str)
     parser.add_argument('--optimizer', help='Optimizer (RMS, Adam, SGR)',
@@ -102,6 +138,38 @@ if __name__ == "__main__":
     dataloader.setup('fit')
 
     train_size = len(dataloader.train.inputs[0])
+
+    # if args.cyclicalLR:
+    #     clr = [float(args.clr.split(",")[0].split("[")[-1]),
+    #            float(args.clr.split(",")[-1].split("]")[0])]
+    #     print('clr limits', clr)
+    #     # Also, it is best to stop training at the end of a cycle,
+    #     # which is when the learning rate is at the minimum value
+    #     # and the accuracy peaks
+    #     batch_size = args.batch_size
+    #     args.batch_size = new_batch_size(args.batch_size, train_size, up=False)
+    #     if batch_size != args.batch_size:
+    #         dataloader = MyDataLoader(database=args.database,
+    #                                   csv_data=args.csv_data,
+    #                                   side=side,
+    #                                   batch=args.batch_size,
+    #                                   data_aug=eval(args.data_aug),
+    #                                   age_range=age_range,
+    #                                   train_file=train_file,
+    #                                   val_file=val_file
+    #                                   )
+
+    #         dataloader.prepare_data('fit')
+    #         dataloader.setup('fit')
+    #     step_size = 6*(train_size//args.batch_size)
+    #     print(step_size)
+    #     # cycle = 2*step_size
+    #     args.num_epochs = new_epoch(args.num_epochs, args.batch_size, up=True)
+
+    #     # args.num_epochs = convert_number_epochs(
+    #     #     (train_size//args.batch_size), args.num_epochs, cycle)
+    #     print("Number of epochs:", args.num_epochs,
+    #           "batch_size:", args.batch_size)
 
     print("Training with", train_size,
           "evaluating with", len(dataloader.val.inputs[0]))
@@ -169,20 +237,24 @@ if __name__ == "__main__":
         clr = [float(args.clr.split(",")[0].split("[")[-1]),
                float(args.clr.split(",")[-1].split("]")[0])]
         print('clr limits', clr)
-        # 10-3.1, 10-1.25
         step_size = 6*(train_size//args.batch_size)
-        print(step_size)
         callbacks.append(CyclicLR(base_lr=10**clr[0],
                                   max_lr=10**clr[1],
                                   mode='triangular2',
                                   step_size=step_size
                                   )
                          )
-
-    callbacks.append(ModelCheckpoint(directory=output_folder,
-                                     filename='ckpt_' +
-                                              output_prefix))
-
+        callbacks.append(ModelCheckpoint(directory=output_folder,
+                                         filename='ckpt_' +
+                                         output_prefix,
+                                         clr=False))
+        # callbacks.append(EarlyStopping(clr=True, patience=20))
+    else:
+        callbacks.append(ModelCheckpoint(directory=output_folder,
+                                         filename='ckpt_' +
+                                         output_prefix,
+                                         clr=False, patience=20))
+        # callbacks.append(EarlyStopping(clr=False))
     callbacks.append(TensorBoardCB(log_dir='_'.join(
                                                output_prefix.split("_")[1:]
                                                ),
