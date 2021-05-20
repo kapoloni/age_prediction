@@ -168,7 +168,7 @@ class LoadDataPath(object):
         scan_paths = [
             os.path.join(os.getcwd(), folder, x)
             for x in os.listdir(folder)
-            if "scale" not in x  # Remove data augmentation of scale
+            # if "scale" not in x  # Remove data augmentation of scale
             if self.side in x
             if x.split(self.side)[0] in img_infos['Image Filename'].values
         ]

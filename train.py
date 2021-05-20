@@ -5,14 +5,12 @@ import os
 import torch
 import torch.nn as nn
 from datetime import date
-import math
 from age_prediction.models.\
     efficientnet_pytorch_3d import EfficientNet3D as EfNetB0
 from age_prediction.dataloader import MyDataLoader
 from age_prediction.trainer import ModuleTrainer
 from age_prediction.callbacks import ModelCheckpoint, CyclicLR, \
-                                      TensorBoardCB, CSVLogger, \
-                                      EarlyStopping
+                                     TensorBoardCB, CSVLogger
 from age_prediction.metrics import MSE, MAE
 
 
@@ -139,38 +137,6 @@ if __name__ == "__main__":
 
     train_size = len(dataloader.train.inputs[0])
 
-    # if args.cyclicalLR:
-    #     clr = [float(args.clr.split(",")[0].split("[")[-1]),
-    #            float(args.clr.split(",")[-1].split("]")[0])]
-    #     print('clr limits', clr)
-    #     # Also, it is best to stop training at the end of a cycle,
-    #     # which is when the learning rate is at the minimum value
-    #     # and the accuracy peaks
-    #     batch_size = args.batch_size
-    #     args.batch_size = new_batch_size(args.batch_size, train_size, up=False)
-    #     if batch_size != args.batch_size:
-    #         dataloader = MyDataLoader(database=args.database,
-    #                                   csv_data=args.csv_data,
-    #                                   side=side,
-    #                                   batch=args.batch_size,
-    #                                   data_aug=eval(args.data_aug),
-    #                                   age_range=age_range,
-    #                                   train_file=train_file,
-    #                                   val_file=val_file
-    #                                   )
-
-    #         dataloader.prepare_data('fit')
-    #         dataloader.setup('fit')
-    #     step_size = 6*(train_size//args.batch_size)
-    #     print(step_size)
-    #     # cycle = 2*step_size
-    #     args.num_epochs = new_epoch(args.num_epochs, args.batch_size, up=True)
-
-    #     # args.num_epochs = convert_number_epochs(
-    #     #     (train_size//args.batch_size), args.num_epochs, cycle)
-    #     print("Number of epochs:", args.num_epochs,
-    #           "batch_size:", args.batch_size)
-
     print("Training with", train_size,
           "evaluating with", len(dataloader.val.inputs[0]))
 
@@ -237,24 +203,17 @@ if __name__ == "__main__":
         clr = [float(args.clr.split(",")[0].split("[")[-1]),
                float(args.clr.split(",")[-1].split("]")[0])]
         print('clr limits', clr)
-        step_size = 6*(train_size//args.batch_size)
+        step_size = 8*(train_size//args.batch_size)
         callbacks.append(CyclicLR(base_lr=10**clr[0],
                                   max_lr=10**clr[1],
-                                  mode='triangular2',
+                                  mode='exp_range',
                                   step_size=step_size
                                   )
                          )
-        callbacks.append(ModelCheckpoint(directory=output_folder,
-                                         filename='ckpt_' +
-                                         output_prefix,
-                                         clr=False))
-        # callbacks.append(EarlyStopping(clr=True, patience=20))
-    else:
-        callbacks.append(ModelCheckpoint(directory=output_folder,
-                                         filename='ckpt_' +
-                                         output_prefix,
-                                         clr=False, patience=20))
-        # callbacks.append(EarlyStopping(clr=False))
+    callbacks.append(ModelCheckpoint(directory=output_folder,
+                                     filename='ckpt_' +
+                                     output_prefix))
+
     callbacks.append(TensorBoardCB(log_dir='_'.join(
                                                output_prefix.split("_")[1:]
                                                ),

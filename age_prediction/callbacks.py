@@ -272,8 +272,7 @@ class ModelCheckpoint(Callback):
                  filename: str = 'ckpt.pth.tar',
                  monitor: str = 'val_loss',
                  save_best_only: bool = False,
-                 verbose: int = 0,
-                 clr: bool = False):
+                 verbose: int = 0):
         """
         Model Checkpoint to save model weights during training
 
@@ -298,7 +297,6 @@ class ModelCheckpoint(Callback):
         self.monitor = monitor
         self.save_best_only = save_best_only
         self.verbose = verbose
-        self.clr = clr
 
         # mode = 'min' only supported
         self.best_loss = math.inf
@@ -321,18 +319,11 @@ class ModelCheckpoint(Callback):
                                          format(self.filename))
                             )
 
-    def on_train_begin(self, logs=None):
-        self.can_save = True
-
     def on_epoch_end(self, epoch, logs=None):
-        if self.clr:
-            if (epoch + 1) % 12 == 0:
-                self.can_save = True
-            else:
-                self.can_save = False
+
         current_loss = logs.get(self.monitor)
 
-        is_best = (current_loss < self.best_loss) & self.can_save
+        is_best = (current_loss < self.best_loss)
 
         if self.save_best_only:
             if is_best:
@@ -776,8 +767,7 @@ class CyclicLR(Callback):
                  max_lr: float = 0.006,
                  step_size: float = 2000.,
                  mode: str = 'triangular',
-                 gamma: float = 1.,
-                 scale_mode: str = 'cycle'):
+                 gamma: float = 1.):
         """
             Cyclical Learning Rate.
 
