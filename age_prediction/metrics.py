@@ -133,7 +133,7 @@ class MAE(Metric):
         self.mae = 0
 
     def __call__(self, y_pred, y_true):
-        y_pred, y_true = is_tuple_or_list_of_list(y_pred, y_true)
+        # y_pred, y_true = is_tuple_or_list_of_list(y_pred, y_true)
         self.mae = nn.L1Loss(reduction='mean'
                              )(y_pred, y_true).cpu().detach().numpy().item()
         return self.mae

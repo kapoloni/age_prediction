@@ -35,12 +35,16 @@ def parse_args(args):
                         snapshot (.pth.tar).', default=None)
     parser.add_argument('--batch_size', help='Batch size',
                         default=128, type=int)
+    parser.add_argument('--weight_decay', help='Weight decay',
+                        default='1e-5')
     parser.add_argument('--loss', help='Loss function (MSE or MAE)',
                         default='MSE', type=str)
     parser.add_argument('--optimizer', help='Optimizer (RMS, Adam, SGDm)',
                         default='Adam', type=str)
     parser.add_argument('--dropout_rate', help='dropout_rate',
                         default='0.2', type=float)
+    parser.add_argument('--num_workers', help='Number of workers',
+                        default='10', type=int)
 
     return parser.parse_args(args)
 
@@ -83,7 +87,8 @@ if __name__ == "__main__":
                               data_aug=eval(args.data_aug),
                               age_range=age_range,
                               train_file=train_file,
-                              val_file=val_file
+                              val_file=val_file,
+                              num_workers=args.num_workers
                               )
 
     dataloader.prepare_data('fit')
@@ -118,14 +123,17 @@ if __name__ == "__main__":
     if args.optimizer == 'RMS':
         optimizer = torch.optim.RMSprop(model.parameters(),
                                         lr=.01, alpha=0.9,
-                                        eps=1e-08, momentum=0.9)
+                                        eps=1e-08, momentum=0.9,
+                                        weight_decay=float(args.weight_decay))
     elif args.optimizer == 'Adam':
         optimizer = torch.optim.Adam(model.parameters(),
-                                     lr=0.01)
+                                     lr=0.01,
+                                     weight_decay=float(args.weight_decay))
     else:
         optimizer = torch.optim.SGD(model.parameters(),
                                     momentum=0.9,
-                                    lr=0.01)
+                                    lr=0.01,
+                                    weight_decay=float(args.weight_decay))
 
     if args.snapshot is not None:
         print('Loading model from {}'.format(args.snapshot))

@@ -73,8 +73,8 @@ def parse_args(args):
                         default=128, type=int)
     parser.add_argument(
         '--num_epochs', help='Number of epochs', default=250, type=int)
-    parser.add_argument('--loss', help='Loss function (KLDiv or MAE)',
-                        default='KLDiv', type=str)
+    parser.add_argument('--loss', help='Loss function (MAE or MSE)',
+                        default='MAE', type=str)
     parser.add_argument('--optimizer', help='Optimizer (RMS, Adam, SGR)',
                         default='Adam', type=str)
     parser.add_argument('--cyclicalLR', help='cyclicalLR', default=True)
@@ -84,6 +84,8 @@ def parse_args(args):
                         default='[-3.1, -1.25]')
     parser.add_argument('--dropout_rate', help='dropout_rate',
                         default='0.2', type=float)
+    parser.add_argument('--num_workers', help='Number of workers',
+                        default='10', type=int)
 
     return parser.parse_args(args)
 
@@ -129,7 +131,8 @@ if __name__ == "__main__":
                               data_aug=eval(args.data_aug),
                               age_range=age_range,
                               train_file=train_file,
-                              val_file=val_file
+                              val_file=val_file,
+                              num_workers=args.num_workers
                               )
 
     dataloader.prepare_data('fit')
@@ -204,6 +207,7 @@ if __name__ == "__main__":
                float(args.clr.split(",")[-1].split("]")[0])]
         print('clr limits', clr)
         step_size = 8*(train_size//args.batch_size)
+        print(step_size)
         callbacks.append(CyclicLR(base_lr=10**clr[0],
                                   max_lr=10**clr[1],
                                   mode='exp_range',

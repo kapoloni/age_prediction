@@ -315,6 +315,11 @@ class ModelCheckpoint(Callback):
         if is_best:
             shutil.copyfile(self.file,
                             os.path.join(self.directory,
+                                         '{}_model_{}_best.pth.tar'.
+                                         format(self.filename, epoch))
+                            )
+            shutil.copyfile(self.file,
+                            os.path.join(self.directory,
                                          '{}_model_best.pth.tar'.
                                          format(self.filename))
                             )
