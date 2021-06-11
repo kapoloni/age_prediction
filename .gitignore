@@ -133,9 +133,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+database_split/split_train_val_test copy.ipynb
 database_split/split_train_val_test.ipynb
 parameters_settings_runs/Jun01_14-25-50_bip-server3age_[0-70]_RMS_wd_0_R_dp0.0_no_da_clr_[-4.,-3.57]/events.out.tfevents.1622557550.bip-server3.22472.0
 parameters_settings_runs/Jun01_16-21-43_bip-server3age_[0-70]_RMS_wd_0_L_dp0.0_no_da_clr_[-4.,-3.57]/events.out.tfevents.1622564503.bip-server3.11550.0
 parameters_settings_runs/Jun01_21-27-26_bip-server3age_[0-70]_RMS_wd_0_L_dp0.0_clr_[-5,-2.9]/events.out.tfevents.1622582846.bip-server3.12517.0
 parameters_settings_runs/Jun02_05-43-05_bip-server3age_[0-70]_RMS_wd_0_R_dp0.0_clr_[-5,-2.65]/events.out.tfevents.1622612585.bip-server3.24759.0
-plots/data_distribution.ipynb
+plots/data_distr.ipynb
