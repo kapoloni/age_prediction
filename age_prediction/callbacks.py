@@ -328,7 +328,7 @@ class ModelCheckpoint(Callback):
 
         current_loss = logs.get(self.monitor)
 
-        is_best = (current_loss < self.best_loss)
+        is_best = (current_loss < self.best_loss) and (epoch > 50)
 
         if self.save_best_only:
             if is_best:

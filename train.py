@@ -14,40 +14,6 @@ from age_prediction.callbacks import ModelCheckpoint, CyclicLR, \
 from age_prediction.metrics import MSE, MAE
 
 
-def new_batch_size(batch_size, train_size, up=True):
-    while(train_size % batch_size != 0):
-        if up:
-            batch_size += 1
-        else:
-            batch_size -= 1
-    return int(batch_size)
-
-
-def new_epoch(num_epochs, batch_size, up=True):
-    # demoro 12 épocas para 1 ciclo
-    while(num_epochs % 12 != 0):
-        if up:
-            num_epochs += 1
-        else:
-            num_epochs -= 1
-    return int(num_epochs)
-
-# def convert_number_epochs(batch_step, num_epochs, cycle):
-#     total_iter = num_epochs * batch_step
-#     if total_iter % cycle == 0:
-#         return num_epochs
-#     else:
-#         completed_cycles = math.ceil(total_iter / cycle)
-#         _total_iter = cycle*completed_cycles
-#         if _total_iter % batch_step != 0:
-#             print("Choose a different batch size, \
-#                 the training should stop only at the end of a cycle")
-#             sys.exit(0)
-#         else:
-#             num_epochs = _total_iter // batch_step
-#     return num_epochs
-
-
 def parse_args(args):
     """!@brief
     Parse the arguments.
