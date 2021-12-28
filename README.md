@@ -32,4 +32,6 @@ Using the TorchIO Python library (https://torchio.readthedocs.io/transforms/augm
 </table>
 
 # Results
-Coming soon
+
+<img src="https://github.com/kapoloni/age_prediction/blob/main/images/table_results.png" width="59%"/>
+	Brain age prediction results.
