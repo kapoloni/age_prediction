@@ -1,5 +1,0 @@
-{
-    "jupyter.jupyterServerType": "local",
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
-}
