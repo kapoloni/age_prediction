@@ -1,4 +1,6 @@
-# Torch implementation of a brain age estimation model.
+# Implementation of the paper
+## [A deep ensemble hippocampal CNN model for brain age estimation applied to Alzheimer’s diagnosis](https://www.sciencedirect.com/science/article/abs/pii/S0957417422001129)
+
 
 Torch implementation of EfficientNet B0 to estimate the brain age from hippocampal MR images of cognitively normal subjects.
 Efficient Model from: https://github.com/shijianjian/EfficientNet-PyTorch-3D <br>
